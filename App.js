@@ -4,7 +4,6 @@ import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
-
 import realizarLogin from './src/screens/realizarLogin';
 import realizarCadastro from './src/screens/realizarCadastro';
 import telaInicial from './src/screens/telaInicial';
