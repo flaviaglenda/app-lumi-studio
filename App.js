@@ -16,7 +16,7 @@ const Stack = createNativeStackNavigator();
 
 function DrawerNavigator() {
   return (
-    <Drawer.Navigator initialRouteName="Galeria">
+    <Drawer.Navigator initialRouteName="Início">
       <Drawer.Screen name="Início" component={telaInicial} />
       <Drawer.Screen name="Galeria" component={telaGaleria} />
       <Drawer.Screen name="Agendamento de ensaios" component={telaAgendamento} />
