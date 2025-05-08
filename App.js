@@ -11,34 +11,39 @@ import telaGaleria from './src/screens/galeria';
 import telaAgendamento from './src/screens/agendamento';
 import telaUpload from './src/screens/realizarUpload';
 
+// const Drawer = createDrawerNavigator();
 const Drawer = createDrawerNavigator();
-const Stack = createNativeStackNavigator();
-
-function DrawerNavigator() {
-  return (
-    <Drawer.Navigator initialRouteName="Galeria">
-      <Drawer.Screen name="Início" component={telaInicial} />
-      <Drawer.Screen name="Galeria" component={telaGaleria} />
-      <Drawer.Screen name="Agendamento de ensaios" component={telaAgendamento} />
-      <Drawer.Screen name="Upload de fotos" component={telaUpload} />
-    </Drawer.Navigator>
-  );
-}
 
 export default function App() {
   return (
     <NavigationContainer>
-      <View style={styles.container}>
-        <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Login">
-          <Stack.Screen name="Login" component={realizarLogin} />
-          <Stack.Screen name="Cadastro" component={realizarCadastro} />
-          <Stack.Screen name="Principal" component={DrawerNavigator} />
-        </Stack.Navigator>
-        <StatusBar style="auto" />
-      </View>
+      <Drawer.Navigator initialRouteName="Início">
+        <Drawer.Screen name="Login" component={realizarLogin} />
+        <Drawer.Screen name="Início" component={telaInicial} />
+        <Drawer.Screen name="Cadastro" component={realizarCadastro} />
+        <Drawer.Screen name="Galeria" component={telaGaleria} />
+        <Drawer.Screen name="Agendamento" component={telaAgendamento} />
+        <Drawer.Screen name="Upload de fotos" component={telaUpload} />
+      </Drawer.Navigator>
     </NavigationContainer>
+
   );
 }
+
+// export default function App() {
+//   return (
+//     <NavigationContainer>
+//       <View style={styles.container}>
+//         <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Login">
+//           <Stack.Screen name="Login" component={realizarLogin} />
+//           <Stack.Screen name="Cadastro" component={realizarCadastro} />
+//           <Stack.Screen name="Principal" component={DrawerNavigator} />
+//         </Stack.Navigator>
+//         <StatusBar style="auto" />
+//       </View>
+//     </NavigationContainer>
+//   );
+// }
 
 const styles = StyleSheet.create({
   container: {
