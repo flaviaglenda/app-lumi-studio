@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
+  Pressable,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 
@@ -18,7 +19,22 @@ const galleryImages = [
   'https://lauraalzueta.com.br/wp-content/uploads/2024/06/poses-gestantes-lauraalzuetasimone-dudu-pedro-lucca-015-1719421068.jpg',
   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQFlj54F-WwuaLF7ZwT-QwfWIoVCpf1LTUDQ&s',
   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnk1DsCB0OyXGH5kp-s9YU3xVzP9u9Rpd_tw&s',
-   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7X6cL2RsNLNQdpPIgeZGFWfVm0K_qPtnutg&s',  // NOVA IMAGEM
+  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7X6cL2RsNLNQdpPIgeZGFWfVm0K_qPtnutg&s',
+];
+
+const services = [
+  {
+    title: 'Sessões de Retratos',
+    img: 'https://storage.alboom.ninja/sites/7443/albuns/939585/tifany-0312.jpg?t=1700607237',
+  },
+  {
+    title: 'Sessões de Maternidade',
+    img: 'https://s3.amazonaws.com/assets.fetalmed.net/wp-content/uploads/2022/11/Ensaio-Gestante-Capa.jpg',
+  },
+  {
+    title: 'Sessões de Família',
+    img: 'https://cdn.alboompro.com/606dc5c0b185090001bfabfe_62a11e7c9f0b810001a35b1a/original_size/foto-de-familia-ensaio-de-bebe-11.JPG?v=1',
+  },
 ];
 
 const App = ({ navigation }) => {
@@ -76,21 +92,18 @@ const App = ({ navigation }) => {
       <View style={styles.servicesSection}>
         <Text style={styles.servicesTitle}>Nossos Serviços</Text>
         <View style={styles.services}>
-          {[{
-            title: 'Sessões de Retratos',
-            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTo1CkdnaR2dvzq3fafaEPLn6ygVbx0oKVCtg&s',
-          },
-          {
-            title: 'Sessões de Maternidade',
-            img: 'https://s3.amazonaws.com/assets.fetalmed.net/wp-content/uploads/2022/11/Ensaio-Gestante-Capa.jpg',
-          },
-          {
-            title: 'Sessões de Família.',
-            img: 'https://cdn.alboompro.com/606dc5c0b185090001bfabfe_62a11e7c9f0b810001a35b1a/original_size/foto-de-familia-ensaio-de-bebe-11.JPG?v=1',
-          }].map((item, index) => (
-            <Animatable.View key={index} animation="zoomIn" delay={index * 200} style={styles.card}>
-              <Image source={{ uri: item.img }} style={styles.cardImage} />
-              <Text style={styles.cardText}>{item.title}</Text>
+          {services.map((item, index) => (
+            <Animatable.View key={index} animation="zoomIn" delay={index * 200}>
+              <Pressable
+                onPress={() => {}}
+                style={({ pressed }) => [
+                  styles.card,
+                  pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
+                ]}
+              >
+                <Image source={{ uri: item.img }} style={styles.cardImage} />
+                <Text style={styles.cardText}>{item.title}</Text>
+              </Pressable>
             </Animatable.View>
           ))}
         </View>
@@ -138,7 +151,7 @@ const App = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fdfaf6',
+    backgroundColor: '#121212', // Fundo escuro
     flex: 1,
   },
   topSection: {
@@ -153,7 +166,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)', // Mais escuro
   },
   overlay: {
     position: 'absolute',
@@ -166,7 +179,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   subtitleText: {
-    color: '#eee',
+    color: '#ccc',
     fontSize: 18,
     marginTop: 5,
   },
@@ -175,7 +188,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 18,
     overflow: 'hidden',
-    elevation: 4,
+    backgroundColor: '#1e1e1e',
+    elevation: 5,
   },
   aboutBackground: {
     position: 'absolute',
@@ -184,7 +198,7 @@ const styles = StyleSheet.create({
   },
   aboutOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: 'rgb(30, 30, 30)',
   },
   aboutContent: {
     padding: 20,
@@ -192,14 +206,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: '700',
     fontSize: 22,
-    color: '#333',
+    color: '#f5f5f5',
     marginBottom: 12,
     textAlign: 'center',
   },
   paragraph: {
     textAlign: 'center',
     fontSize: 16,
-    color: '#555',
+    color: '#fff',
     lineHeight: 24,
     marginBottom: 10,
   },
@@ -210,7 +224,7 @@ const styles = StyleSheet.create({
   servicesTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#f0f0f0',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -221,23 +235,28 @@ const styles = StyleSheet.create({
   },
   card: {
     alignItems: 'center',
-    width: '30%',
-    backgroundColor: '#fff',
+    width: 110,
+    backgroundColor: '#1e1e1e',
     borderRadius: 18,
     paddingVertical: 15,
     marginVertical: 10,
+    marginHorizontal: 5,
     elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   cardImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     marginBottom: 10,
   },
   cardText: {
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
-    color: '#444',
+    color: '#ddd',
     fontWeight: '600',
   },
   galleryHeader: {
@@ -250,7 +269,7 @@ const styles = StyleSheet.create({
   galleryTitle: {
     fontWeight: 'bold',
     fontSize: 20,
-    color: '#333',
+    color: '#f0f0f0',
   },
   viewMoreButton: {
     backgroundColor: '#a98860',
@@ -275,18 +294,23 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 14,
     marginHorizontal: 6,
+    borderWidth: 2,
+    borderColor: 'rgb(30, 30, 30)',
   },
   arrow: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1e1e1e',
     borderRadius: 30,
     padding: 6,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgb(0 0 0);',
   },
   arrowText: {
-    fontSize: 20,
+    fontSize: 24,
     color: '#a98860',
     fontWeight: 'bold',
   },
 });
+
 
 export default App;
