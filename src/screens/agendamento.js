@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
-import { Calendar } from 'react-native-calendars';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Image,
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Alert
+} from 'react-native';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig'; // ajuste o caminho
+import { db } from '../../firebaseConfig';
+import banner from '../assets/titolo.png';
 
-console.log('DB é:', db);
 export default function AgendamentoScreen() {
   const [form, setForm] = useState({
     nome: '',
@@ -14,7 +26,24 @@ export default function AgendamentoScreen() {
     hora: '',
     detalhes: ''
   });
-  
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [campoAtivo, setCampoAtivo] = useState('');
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+      setCampoAtivo('');
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
@@ -48,83 +77,117 @@ export default function AgendamentoScreen() {
     }
   };
 
+  LocaleConfig.locales['pt-br'] = {
+    monthNames: [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ],
+    monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+    dayNames: ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'],
+    dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+    today: 'Hoje'
+  };
+
+  LocaleConfig.defaultLocale = 'pt-br';
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titulo}>Agende seus ensaios</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image source={banner} style={styles.banner} resizeMode="contain" />
 
-      <TextInput
-        placeholder="Seu nome completo"
-        style={styles.input}
-        onChangeText={text => handleChange('nome', text)}
-        value={form.nome}
-      />
-      <TextInput
-        placeholder="Seu e-mail"
-        style={styles.input}
-        onChangeText={text => handleChange('email', text)}
-        value={form.email}
-        keyboardType="email-address"
-      />
-      <TextInput
-        placeholder="Telefone (com DDD)"
-        keyboardType="phone-pad"
-        style={styles.input}
-        onChangeText={text => handleChange('telefone', text)}
-        value={form.telefone}
-      />
+        <TextInput
+          placeholder="Seu nome completo"
+          style={styles.input}
+          onFocus={() => setCampoAtivo('nome')}
+          onChangeText={text => handleChange('nome', text)}
+          value={form.nome}
+        />
+        <TextInput
+          placeholder="Seu e-mail"
+          style={styles.input}
+          onFocus={() => setCampoAtivo('email')}
+          onChangeText={text => handleChange('email', text)}
+          value={form.email}
+          keyboardType="email-address"
+        />
+        <TextInput
+          placeholder="Telefone (com DDD)"
+          keyboardType="phone-pad"
+          style={styles.input}
+          onFocus={() => setCampoAtivo('telefone')}
+          onChangeText={text => handleChange('telefone', text)}
+          value={form.telefone}
+        />
+        <View style={styles.calendarWrapper}>
+          <Calendar
+            onDayPress={(day) => handleChange('data', day.dateString)}
+            markedDates={{
+              [form.data]: { selected: true, selectedColor: '#ffc107' }
+            }}
+            theme={{
+              selectedDayBackgroundColor: '#ffc107',
+              todayTextColor: '#000',
+            }}
+          />
+        </View>
+        <TextInput
+          placeholder="Horário (Brasília)"
+          style={styles.input}
+          onFocus={() => setCampoAtivo('hora')}
+          onChangeText={text => handleChange('hora', text)}
+          value={form.hora}
+        />
+        <TextInput
+          placeholder="Algum detalhe extra?"
+          multiline
+          numberOfLines={4}
+          style={[styles.input, styles.textArea]}
+          onFocus={() => setCampoAtivo('detalhes')}
+          onChangeText={text => handleChange('detalhes', text)}
+          value={form.detalhes}
+        />
 
-      <Calendar
-        onDayPress={day => handleChange('data', day.dateString)}
-        style={styles.calendar}
-        theme={{
-          selectedDayBackgroundColor: '#ffc107',
-          todayTextColor: '#000',
-        }}
-        markedDates={{
-          [form.data]: { selected: true, selectedColor: '#ffc107' }
-        }}
-      />
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>ENVIAR</Text>
+        </TouchableOpacity>
+      </ScrollView>
 
-      <TextInput
-        placeholder="Horário (Brasília)"
-        style={styles.input}
-        onChangeText={text => handleChange('hora', text)}
-        value={form.hora}
-      />
-      <TextInput
-        placeholder="Algum detalhe extra?"
-        multiline
-        numberOfLines={4}
-        style={[styles.input, styles.textArea]}
-        onChangeText={text => handleChange('detalhes', text)}
-        value={form.detalhes}
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>ENVIAR</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      {/* Caixinha flutuante */}
+      {keyboardVisible && campoAtivo !== '' && form[campoAtivo] !== '' && (
+        <View style={styles.previewFloating}>
+          <Text style={styles.previewText}>Digitando: {form[campoAtivo]}</Text>
+        </View>
+      )}
+    </KeyboardAvoidingView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#F6EFE0',
     padding: 20,
-    backgroundColor: '#fdf1dc',
-    alignItems: 'center'
+    paddingBottom: 100,
   },
-  titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20
+  banner: {
+    width: '100%',
+    height: 150,
+    marginBottom: 20,
   },
   input: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
     borderWidth: 1,
-    padding: 10,
+    borderColor: '#ccc',
+    padding: 12,
     borderRadius: 8,
-    marginBottom: 10
+    marginBottom: 15,
+  },
+  calendarWrapper: {
+    transform: [{ scale: 1 }], // Diminui o calendário
+    alignSelf: 'center',         // Centraliza
+    borderRadius: 10,
+    marginBottom: 20,
   },
   textArea: {
     height: 100,
@@ -134,18 +197,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     padding: 15,
     borderRadius: 8,
-    width: '100%',
-    marginVertical: 10
+    alignItems: 'center',
+    marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold'
+    color: '#fff',         // ← cor branca
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  calendar: {
-    marginBottom: 20,
-    marginTop: 20,
-    width: '100%',
-    borderRadius: 12
-  }
+  previewBox: {
+    marginBottom: 15,
+  },
+  previewText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  previewFloating: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 290 : 100,
+    left: 20,
+    right: 20,
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 10,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
 });
