@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig'; // ajuste o caminho
 
-import Cabecalho from './Cabecalho'; // Ajuste o caminho
-
+console.log('DB é:', db);
 export default function AgendamentoScreen() {
   const [form, setForm] = useState({
     nome: '',
@@ -13,18 +14,38 @@ export default function AgendamentoScreen() {
     hora: '',
     detalhes: ''
   });
-
+  
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.nome || !form.email || !form.telefone || !form.data || !form.hora) {
       Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
       return;
     }
-    // Aqui você envia os dados para backend/Firebase etc.
-    Alert.alert('Sucesso', 'Agendamento enviado!');
+
+    const dataCompleta = `${form.data}T${form.hora.length === 5 ? form.hora : form.hora + ':00'}`;
+
+    if (isNaN(Date.parse(dataCompleta))) {
+      Alert.alert('Erro', 'Data ou hora inválida.');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'agendamentos'), {
+        nomeCompleto: form.nome,
+        emailAgendamento: form.email,
+        telefone: form.telefone,
+        dataAgendamento: new Date(dataCompleta),
+        detalhes: form.detalhes
+      });
+      Alert.alert('Sucesso', 'Agendamento enviado!');
+      setForm({ nome: '', email: '', telefone: '', data: '', hora: '', detalhes: '' });
+    } catch (error) {
+      console.error('Erro ao enviar agendamento:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao enviar seu agendamento.');
+    }
   };
 
   return (
