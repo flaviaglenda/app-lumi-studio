@@ -1,46 +1,57 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Button } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function AgendamentosMenuScreen({ navigation }) {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-      <Button
-        title="Fazer Agendamento"
-        onPress={() => navigation.navigate('Agendamento')}
-      />
-      <View style={{ height: 20 }} />
-      <Button
-        title="Meus Agendamentos"
-        onPress={() => navigation.navigate('MeusAgendamentos')}
-      />
+    <View style={styles.container}>
+      <View style={styles.option}>
+        <TouchableOpacity
+          style={styles.circleButton}
+          onPress={() => navigation.navigate('Agendamento')}
+        >
+          <Icon name="pen" size={28} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.label}>Agendar</Text>
+      </View>
+
+      <View style={styles.option}>
+        <TouchableOpacity
+          style={styles.circleButton}
+          onPress={() => navigation.navigate('MeusAgendamentos')}
+        >
+          <Icon name="calendar-alt" size={28} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.label}>Meus Agendamentos</Text>
+      </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
-    flex:1,
-    justifyContent:'center',
-    alignItems:'center',
-    padding:20,
-    backgroundColor: '#F6EFE0',
-  },
-  title: {
-    fontSize: 22,
-    marginBottom: 30,
-    fontWeight: 'bold',
-  },
-  button: {
-    backgroundColor: '#ffc107',
-    padding: 15,
-    marginVertical: 10,
-    borderRadius: 8,
-    width: '80%',
+    flex: 1,
+    backgroundColor: '#121212',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
-    color: '#000',
+  option: {
+    alignItems: 'center',
+    marginVertical: 20, // espaço entre as opções
+  },
+  circleButton: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#000',
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  label: {
+    marginTop: 10,
+    color: '#fff',
+    fontSize: 14,
     fontWeight: 'bold',
-    fontSize: 16,
+    textAlign: 'center',
   },
 });

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
+import { useNavigation } from '@react-navigation/native';
 
 export default function MeusAgendamentosScreen() {
+  const navigation = useNavigation();
   const [agendamentos, setAgendamentos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,12 +64,19 @@ export default function MeusAgendamentosScreen() {
   }
 
   return (
-    <FlatList
-      data={agendamentos}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.container}
-    />
+    <View style={{ flex: 1, backgroundColor: '#121212' }}>
+      {/* Botão de voltar */}
+      <TouchableOpacity style={styles.voltar} onPress={() => navigation.goBack()}>
+        <Text style={styles.voltarTexto}>← Voltar</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        data={agendamentos}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.container}
+      />
+    </View>
   );
 }
 
@@ -75,7 +84,21 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     paddingBottom: 40,
-    backgroundColor: '#FFF', // fundo da tela escuro
+  },
+  voltar: {
+    alignSelf: 'flex-start',
+    marginLeft: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#000',
+    borderRadius: 8,
+  },
+  voltarTexto: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   item: {
     backgroundColor: '#000',

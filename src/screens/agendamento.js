@@ -51,36 +51,36 @@ export default function AgendamentoScreen() {
   };
 
   const handleSubmit = async () => {
-  if (!form.nome || !form.email || !form.telefone || !form.data || !form.hora) {
-    Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
-    return;
-  }
+    if (!form.nome || !form.email || !form.telefone || !form.data || !form.hora) {
+      Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
+      return;
+    }
 
-  const dataCompleta = `${form.data}T${form.hora.length === 5 ? form.hora : form.hora + ':00'}`;
+    const dataCompleta = `${form.data}T${form.hora.length === 5 ? form.hora : form.hora + ':00'}`;
 
-  if (isNaN(Date.parse(dataCompleta))) {
-    Alert.alert('Erro', 'Data ou hora inválida.');
-    return;
-  }
+    if (isNaN(Date.parse(dataCompleta))) {
+      Alert.alert('Erro', 'Data ou hora inválida.');
+      return;
+    }
 
-  try {
-    await addDoc(collection(db, 'agendamentos'), {
-      nomeCompleto: form.nome,
-      emailAgendamento: form.email,
-      telefone: form.telefone,
-      dataAgendamento: new Date(dataCompleta),
-      detalhes: form.detalhes
-    });
+    try {
+      await addDoc(collection(db, 'agendamentos'), {
+        nomeCompleto: form.nome,
+        emailAgendamento: form.email,
+        telefone: form.telefone,
+        dataAgendamento: new Date(dataCompleta),
+        detalhes: form.detalhes
+      });
 
-    Alert.alert('Sucesso', 'Agendamento enviado!');
-    setForm({ nome: '', email: '', telefone: '', data: '', hora: '', detalhes: '' });
-    navigation.navigate('MeusAgendamentos');
-    
-  } catch (error) {
-    console.error('Erro ao enviar agendamento:', error);
-    Alert.alert('Erro', 'Ocorreu um erro ao enviar seu agendamento.');
-  }
-};
+      Alert.alert('Sucesso', 'Agendamento enviado!');
+      setForm({ nome: '', email: '', telefone: '', data: '', hora: '', detalhes: '' });
+      navigation.navigate('MeusAgendamentos');
+
+    } catch (error) {
+      console.error('Erro ao enviar agendamento:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao enviar seu agendamento.');
+    }
+  };
 
   LocaleConfig.locales['pt-br'] = {
     monthNames: [
@@ -101,6 +101,9 @@ export default function AgendamentoScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.container}>
+        <TouchableOpacity style={styles.voltar} onPress={() => navigation.goBack()}>
+          <Text style={styles.voltarTexto}>← Voltar</Text>
+        </TouchableOpacity>
         <Image source={banner} style={styles.banner} resizeMode="contain" />
 
         <TextInput
@@ -198,6 +201,22 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  voltar: {
+  alignSelf: 'flex-start',
+  marginLeft: 10,
+  marginTop: 5,
+  marginBottom: 10,
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  backgroundColor: '#000',
+  borderRadius: 8,
+},
+
+voltarTexto: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: 'bold',
+},
   button: {
     backgroundColor: '#000',
     padding: 15,
