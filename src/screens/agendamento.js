@@ -16,8 +16,10 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import banner from '../assets/titolo.png';
+import { useNavigation } from '@react-navigation/native';
 
 export default function AgendamentoScreen() {
+  const navigation = useNavigation();
   const [form, setForm] = useState({
     nome: '',
     email: '',
@@ -49,33 +51,36 @@ export default function AgendamentoScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!form.nome || !form.email || !form.telefone || !form.data || !form.hora) {
-      Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
-      return;
-    }
+  if (!form.nome || !form.email || !form.telefone || !form.data || !form.hora) {
+    Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
+    return;
+  }
 
-    const dataCompleta = `${form.data}T${form.hora.length === 5 ? form.hora : form.hora + ':00'}`;
+  const dataCompleta = `${form.data}T${form.hora.length === 5 ? form.hora : form.hora + ':00'}`;
 
-    if (isNaN(Date.parse(dataCompleta))) {
-      Alert.alert('Erro', 'Data ou hora inválida.');
-      return;
-    }
+  if (isNaN(Date.parse(dataCompleta))) {
+    Alert.alert('Erro', 'Data ou hora inválida.');
+    return;
+  }
 
-    try {
-      await addDoc(collection(db, 'agendamentos'), {
-        nomeCompleto: form.nome,
-        emailAgendamento: form.email,
-        telefone: form.telefone,
-        dataAgendamento: new Date(dataCompleta),
-        detalhes: form.detalhes
-      });
-      Alert.alert('Sucesso', 'Agendamento enviado!');
-      setForm({ nome: '', email: '', telefone: '', data: '', hora: '', detalhes: '' });
-    } catch (error) {
-      console.error('Erro ao enviar agendamento:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao enviar seu agendamento.');
-    }
-  };
+  try {
+    await addDoc(collection(db, 'agendamentos'), {
+      nomeCompleto: form.nome,
+      emailAgendamento: form.email,
+      telefone: form.telefone,
+      dataAgendamento: new Date(dataCompleta),
+      detalhes: form.detalhes
+    });
+
+    Alert.alert('Sucesso', 'Agendamento enviado!');
+    setForm({ nome: '', email: '', telefone: '', data: '', hora: '', detalhes: '' });
+    navigation.navigate('MeusAgendamentos');
+    
+  } catch (error) {
+    console.error('Erro ao enviar agendamento:', error);
+    Alert.alert('Erro', 'Ocorreu um erro ao enviar seu agendamento.');
+  }
+};
 
   LocaleConfig.locales['pt-br'] = {
     monthNames: [
