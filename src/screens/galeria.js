@@ -47,8 +47,10 @@ export default function TelaGaleria() {
   return (
     <View style={estilos.container}>
       <View style={estilos.barraTopo}>
-        <View style={estilos.botaoGaleria}>
-          <Text style={estilos.textoBotaoGaleria}>GALERIA</Text>
+        <View style={estilos.areaTopoImagem}>
+          <View style={estilos.overlayTexto}>
+            <Text style={estilos.textoSobreImagem}>EXPLORE NOSSA GALERIA</Text>
+          </View>
         </View>
       </View>
 
@@ -63,10 +65,13 @@ export default function TelaGaleria() {
                   <View style={estilos.pontoVermelho} />
                   <Text style={estilos.textoTitulo}>{item.titulo}</Text>
                 </View>
-                <Image
-                  source={{ uri: item.url }}
-                  style={estilos.imagemGaleria}
-                />
+
+                <View style={estilos.sombraImagem}>
+                  <Image
+                    source={{ uri: item.url }}
+                    style={estilos.imagemGaleria}
+                  />
+                </View>
               </View>
             ))
           )}
@@ -79,9 +84,9 @@ export default function TelaGaleria() {
               style={estilos.logoImagem}
             />
             <Text style={estilos.textoRodape}>
-              Capture o mundo com a gente! Conecte-se com nossa comunidade,
+              Capture o mundo com a gente! Conecte-se pelos nossos canais,
               acesse recursos essenciais e conte com nosso suporte sempre que
-              precisar.
+              precisar. Estamos aqui para transformar cada clique em uma lembrança inesquecível.
             </Text>
             <View style={estilos.iconesSociais}>
               <Icone
@@ -111,7 +116,39 @@ export default function TelaGaleria() {
 }
 
 const estilos = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  areaTopoImagem: {
+    position: "relative",
+    width: "100%",
+    height: 40,
+    marginBottom: 16,
+  },
+  imagemTopo: {
+    width: 390,
+    height: 200,
+    marginLeft: -40,
+    marginTop: -70,
+    marginBottom: -20,
+  },
+  overlayTexto: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  textoSobreImagem: {
+    color: "000",
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    textShadowColor: "rgba(0, 0, 0, 0.28)",
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 4,
+  },
+  container: { flex: 1, backgroundColor: "#f4ecde" },
   barraTopo: {
     flexDirection: "row",
     alignItems: "center",
@@ -119,27 +156,29 @@ const estilos = StyleSheet.create({
     paddingTop: 10,
     justifyContent: "space-between",
   },
-  botaoGaleria: {
-    marginLeft: 130,
-    backgroundColor: "#2b2b2b",
-    paddingHorizontal: 18,
-    paddingVertical: 6,
-    borderRadius: 14,
-  },
-  textoBotaoGaleria: {
-    color: "#fff",
-    fontWeight: "bold",
+  sombraImagem: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 9,
+    borderRadius: 10,
+    backgroundColor: "transparent",
+    marginBottom: 10,
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "space-between",
     paddingBottom: 20,
-    backgroundColor: "#fffaf2",
+    backgroundColor: "#f4ecde",
   },
   conteudo: { paddingHorizontal: 16 },
   cartao: {
     marginBottom: 26,
-    backgroundColor: "#fff",
+    backgroundColor: "#f4ecde",
   },
   linhaTitulo: {
     flexDirection: "row",
