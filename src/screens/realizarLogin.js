@@ -95,12 +95,12 @@ const styles = StyleSheet.create({
   },
   titleBox: {
     backgroundColor: '#f4ecde',
-    paddingHorizontal: 20,
-    paddingVertical: 5,
+    paddingHorizontal: 60,
+    paddingVertical: 3,
     marginBottom: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: 23,
     fontWeight: '900',
     color: '#000',
   },
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4ecde',
     paddingVertical: 10,
     paddingHorizontal: 30,
-    borderRadius: 25,
+    borderRadius: 22,
     marginTop: 20,
   },
   buttonText: {
