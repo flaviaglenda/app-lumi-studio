@@ -227,8 +227,8 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   galleryImage: {
-    width: 150,  // Tamanho das imagens ajustado para maior atratividade
-    height: 100, // Tamanho das imagens ajustado para maior atratividade
+    width: 150, 
+    height: 100,
     borderRadius: 14,
     marginRight: 14,
     shadowColor: '#000',

@@ -17,7 +17,7 @@ const Drawer = createDrawerNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Início">
+      <Drawer.Navigator initialRouteName="Galeria">
         <Drawer.Screen name="Login" component={realizarLogin} />
         <Drawer.Screen name="Início" component={telaInicial} />
         <Drawer.Screen name="Cadastro" component={realizarCadastro} />
