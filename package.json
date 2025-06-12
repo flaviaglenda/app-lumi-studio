@@ -10,13 +10,17 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
+    "@react-native-community/datetimepicker": "^8.4.1",
     "@react-navigation/bottom-tabs": "^7.3.12",
     "@react-navigation/drawer": "^7.4.1",
     "@react-navigation/native": "^7.1.10",
     "@react-navigation/native-stack": "^7.3.14",
     "expo": "~53.0.7",
     "expo-image-picker": "~16.1.4",
+<<<<<<< HEAD
     "expo-linear-gradient": "~14.1.5",
+=======
+>>>>>>> d49a5eba1c7bf5e3cfcafef8761ed62abf0506ff
     "expo-status-bar": "~2.2.3",
     "firebase": "^11.9.1",
     "prop-types": "^15.8.1",
@@ -28,6 +32,7 @@
     "react-native-gesture-handler": "~2.24.0",
     "react-native-image-picker": "^8.2.1",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-paper": "^5.14.5",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.4.0",

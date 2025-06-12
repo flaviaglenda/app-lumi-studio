@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity }
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 export default function MeusAgendamentosScreen() {
   const navigation = useNavigation();

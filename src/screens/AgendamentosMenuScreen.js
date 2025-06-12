@@ -31,7 +31,7 @@ export default function AgendamentosMenuScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: 'rgb(52 52 52)',
     justifyContent: 'center',
     alignItems: 'center',
   },
