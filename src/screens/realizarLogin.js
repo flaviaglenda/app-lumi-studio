@@ -7,15 +7,16 @@ import {
   ImageBackground,
   Image,
   StyleSheet,
+  TouchableOpacity,
   Pressable,
 } from 'react-native';
 // import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 
-export default function App({navigation}) {
+export default function App({ navigation }) {
   return (
     <ImageBackground
-      source={require('./../assets/login-fundo.jpg')} 
+      source={require('./../assets/login-fundo.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
@@ -64,6 +65,14 @@ export default function App({navigation}) {
           </Pressable>
         </View>
       </View>
+      <View style={styles.textCadastro}>
+        <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
+          <Text style={styles.linkCadastro}>
+            Não tem uma conta? <Text style={styles.linkDestacado}>Cadastre-se</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <StatusBar style="auto" />
     </ImageBackground>
   );
@@ -129,5 +138,24 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#000',
     fontWeight: '900',
+  },
+  textCadastro: {
+    marginTop: -90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
+    width: 'auto',
+    height: 80,
+    borderRadius: 900,
+  },
+
+  linkCadastro: {
+    fontSize: 16,
+    color: '#fff',
+  },
+
+  linkDestacado: {
+    color: '#fff',
+    textDecorationLine: 'underline',
   },
 });
