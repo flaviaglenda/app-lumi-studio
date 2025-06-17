@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore'; // ← importante importar where
 import { db } from '../../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { getAuth } from 'firebase/auth';
 
 export default function MeusAgendamentosScreen() {
   const navigation = useNavigation();
@@ -13,9 +13,22 @@ export default function MeusAgendamentosScreen() {
   useEffect(() => {
     const carregarAgendamentos = async () => {
       try {
-        const q = query(collection(db, 'agendamentos'), orderBy('dataAgendamento'));
-        const snapshot = await getDocs(q);
+        const auth = getAuth();
+        const user = auth.currentUser;
 
+        if (!user) {
+          console.log("Nenhum usuário logado");
+          setLoading(false);
+          return;
+        }
+
+        const q = query(
+          collection(db, 'agendamentos'),
+          where('emailAgendamento', '==', user.email),
+          orderBy('dataAgendamento')
+        );
+
+        const snapshot = await getDocs(q);
         const lista = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -47,7 +60,6 @@ export default function MeusAgendamentosScreen() {
           <Text style={styles.text}>Horário: {hora}</Text>
           {item.detalhes ? <Text style={styles.text}>Detalhes: {item.detalhes}</Text> : null}
         </View>
-
         <View style={styles.dataCirculo}>
           <Text style={styles.dataTexto}>{dia}/{mes}</Text>
         </View>
@@ -66,7 +78,6 @@ export default function MeusAgendamentosScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
-      {/* Botão de voltar */}
       <TouchableOpacity style={styles.voltar} onPress={() => navigation.goBack()}>
         <Text style={styles.voltarTexto}>← Voltar</Text>
       </TouchableOpacity>
@@ -80,6 +91,7 @@ export default function MeusAgendamentosScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
