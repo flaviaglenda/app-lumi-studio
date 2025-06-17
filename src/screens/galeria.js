@@ -7,7 +7,6 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import Icone from "react-native-vector-icons/FontAwesome";
 import s3 from "../../awsConfig";
 
 export default function TelaGaleria() {
@@ -46,18 +45,26 @@ export default function TelaGaleria() {
 
   return (
     <View style={estilos.container}>
+      {/* TOPO */}
       <View style={estilos.barraTopo}>
         <View style={estilos.areaTopoImagem}>
           <View style={estilos.overlayTexto}>
-            <Text style={estilos.textoSobreImagem}>EXPLORE NOSSA GALERIA</Text>
+            <Text style={estilos.textoSobreImagem}>
+              EXPLORE NOSSA GALERIA
+            </Text>
           </View>
         </View>
       </View>
 
+      {/* CONTEÚDO */}
       <ScrollView contentContainerStyle={estilos.scrollContainer}>
         <View style={estilos.conteudo}>
           {carregando ? (
             <ActivityIndicator size="large" color="#000" />
+          ) : fotos.length === 0 ? (
+            <Text style={{ textAlign: "center", marginTop: 20 }}>
+              Nenhuma imagem encontrada.
+            </Text>
           ) : (
             fotos.map((item, index) => (
               <View key={index} style={estilos.cartao}>
@@ -77,57 +84,28 @@ export default function TelaGaleria() {
           )}
         </View>
 
-        <View style={estilos.rodape}>
-          <View style={{ flexDirection: "column" }}>
-            <Image
-              source={require("../assets/logo_fundopreto.png")}
-              style={estilos.logoImagem}
-            />
-            <Text style={estilos.textoRodape}>
-              Capture o mundo com a gente! Conecte-se pelos nossos canais,
-              acesse recursos essenciais e conte com nosso suporte sempre que
-              precisar. Estamos aqui para transformar cada clique em uma lembrança inesquecível.
-            </Text>
-            <View style={estilos.iconesSociais}>
-              <Icone
-                name="instagram"
-                size={18}
-                color="#fff"
-                style={estilos.iconeSocial}
-              />
-              <Icone
-                name="facebook"
-                size={18}
-                color="#fff"
-                style={estilos.iconeSocial}
-              />
-              <Icone
-                name="youtube"
-                size={18}
-                color="#fff"
-                style={estilos.iconeSocial}
-              />
-            </View>
-          </View>
-        </View>
+       
       </ScrollView>
     </View>
   );
 }
 
 const estilos = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f4ecde" },
+
+  // TOPO
+  barraTopo: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    justifyContent: "space-between",
+  },
   areaTopoImagem: {
     position: "relative",
     width: "100%",
     height: 40,
     marginBottom: 16,
-  },
-  imagemTopo: {
-    width: 390,
-    height: 200,
-    marginLeft: -40,
-    marginTop: -70,
-    marginBottom: -20,
   },
   overlayTexto: {
     position: "absolute",
@@ -140,7 +118,7 @@ const estilos = StyleSheet.create({
     paddingHorizontal: 20,
   },
   textoSobreImagem: {
-    color: "000",
+    color: "#000", // Corrigido, antes estava "000"
     fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
@@ -148,27 +126,8 @@ const estilos = StyleSheet.create({
     textShadowOffset: { width: 1, height: 2 },
     textShadowRadius: 4,
   },
-  container: { flex: 1, backgroundColor: "#f4ecde" },
-  barraTopo: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    justifyContent: "space-between",
-  },
-  sombraImagem: {
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 9,
-    borderRadius: 10,
-    backgroundColor: "transparent",
-    marginBottom: 10,
-  },
+
+  // CONTEÚDO
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "space-between",
@@ -201,32 +160,14 @@ const estilos = StyleSheet.create({
     height: 160,
     borderRadius: 10,
   },
-  rodape: {
-    marginTop: 30,
-    backgroundColor: "#000",
-    height: 200,
-    width: "100%",
-    alignSelf: "stretch",
-    marginBottom: -90,
-    padding: 16,
-  },
-  logoImagem: {
-    width: 140,
-    height: 45,
-    resizeMode: "contain",
-    marginBottom: 14,
-  },
-  textoRodape: {
-    color: "#ccc",
-    fontSize: 12,
-    lineHeight: 17,
-    marginBottom: 14,
-  },
-  iconesSociais: {
-    flexDirection: "row",
-    marginTop: 8,
-  },
-  iconeSocial: {
-    marginRight: 16,
+  sombraImagem: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 9,
+    borderRadius: 10,
+    backgroundColor: "transparent",
+    marginBottom: 10,
   },
 });
