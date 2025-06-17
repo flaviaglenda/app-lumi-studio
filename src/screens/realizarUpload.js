@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,9 +18,6 @@ import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
 import s3 from '../../awsConfig'; // Seu awsConfig
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { useEffect } from 'react';
-
-
 
 export default function RealizarUpload({ navigation }) {
   const [images, setImages] = useState([]);
@@ -28,19 +26,19 @@ export default function RealizarUpload({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-  const auth = getAuth();
+    const auth = getAuth();
 
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      Alert.alert('Acesso negado', 'Você precisa estar logado para acessar essa página.');
-      navigation.replace('Login');
-    } else {
-      setUserEmail(user.email); // ← pega o e-mail do usuário logado
-    }
-  });
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        Alert.alert('Acesso negado', 'Você precisa estar logado para acessar essa página.');
+        navigation.replace('Login');
+      } else {
+        setUserEmail(user.email);
+      }
+    });
 
-  return unsubscribe;
-}, []);
+    return unsubscribe;
+  }, []);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -49,6 +47,7 @@ export default function RealizarUpload({ navigation }) {
     });
 
     if (!result.canceled) {
+      // No web, result.assets[0].uri pode ser blob URL ou file URI
       setImages([...images, result.assets[0].uri]);
     }
   };
@@ -58,35 +57,42 @@ export default function RealizarUpload({ navigation }) {
     newImages.splice(index, 1);
     setImages(newImages);
   };
-const uploadToS3 = async (fileUri) => {
-  try {
-    const fileName = fileUri.split('/').pop();
-    const fileType = fileName.split('.').pop();
 
-    const base64 = await FileSystem.readAsStringAsync(fileUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+  const uploadToS3 = async (fileUri) => {
+    try {
+      const fileName = fileUri.split('/').pop();
+      const fileType = fileName.split('.').pop();
 
-    const buffer = Buffer.from(base64, 'base64');
+      let buffer;
 
-    // Usa exatamente o título digitado pela pessoa
-    const sanitizedTitle = title.trim(); // Remove apenas espaços nas pontas
+      if (Platform.OS === 'web') {
+        // No web, faz fetch no arquivo pra pegar blob e converter
+        const response = await fetch(fileUri);
+        const blob = await response.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
+      } else {
+        // No mobile, usa o expo-file-system normalmente
+        const base64 = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        buffer = Buffer.from(base64, 'base64');
+      }
 
-    const params = {
-      Bucket: 'lumi-studio',
-      Key: `fotos/${sanitizedTitle}.${fileType}`, 
-      Body: buffer,
-      ContentType: `image/${fileType}`,
-      ACL: 'public-read',
-    };
+      const params = {
+        Bucket: 'lumi-studio',
+        Key: `fotos/${title.trim()}.${fileType}`,
+        Body: buffer,
+        ContentType: `image/${fileType}`,
+        ACL: 'public-read',
+      };
 
-    return s3.upload(params).promise();
-  } catch (error) {
-    console.error('Erro no uploadToS3:', error);
-    throw error;
-  }
-};
-
+      return s3.upload(params).promise();
+    } catch (error) {
+      console.error('Erro no uploadToS3:', error);
+      throw error;
+    }
+  };
 
   const handlePublish = async () => {
     if (images.length === 0 || title.trim() === '') {
@@ -100,13 +106,12 @@ const uploadToS3 = async (fileUri) => {
       const uploadPromises = images.map((img) => uploadToS3(img));
       await Promise.all(uploadPromises);
 
-    Alert.alert('Sucesso', 'Suas fotos foram publicadas na galeria!', [
-  {
-    text: 'OK',
-    onPress: () => navigation.navigate('Galeria', { atualizar: true }),
-  },
-]);
-
+      Alert.alert('Sucesso', 'Suas fotos foram publicadas na galeria!', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('Galeria', { atualizar: true }),
+        },
+      ]);
 
       setImages([]);
       setTitle('');
@@ -168,8 +173,6 @@ const uploadToS3 = async (fileUri) => {
         <Text style={styles.infoText}>
           Ao enviar, você concorda com nossos Termos e Política de Privacidade.
         </Text>
-
-    
       </ScrollView>
       <StatusBar style="auto" />
     </View>
@@ -255,6 +258,4 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: 20,
   },
-
 });
-

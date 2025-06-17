@@ -21,41 +21,47 @@ export default function Cadastro({ navigation }) {
   const [senha, setSenha] = useState('');
 
   const handleCadastro = async () => {
-    if (!nome || !email || !senha) {
-      Alert.alert('Preencha todos os campos!');
+    if (!nome.trim() || !email.trim() || !senha.trim()) {
+      Alert.alert('Erro', 'Preencha todos os campos!');
       return;
     }
 
     if (senha.length < 6) {
-      Alert.alert('A senha precisa ter no mínimo 6 caracteres.');
+      Alert.alert('Erro', 'A senha precisa ter no mínimo 6 caracteres.');
       return;
     }
 
     try {
+      // Cria usuário com email e senha
       const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
       const user = userCredential.user;
 
-      // Salvando nome e email no Firestore
+      // Salva dados adicionais no Firestore
       await setDoc(doc(db, 'usuarios', user.uid), {
-        nome: nome,
-        email: email,
+        nome: nome.trim(),
+        email: email.trim(),
         uid: user.uid,
       });
 
-      Alert.alert('Conta criada com sucesso!');
+      Alert.alert('Sucesso', 'Conta criada com sucesso!');
       navigation.navigate('Login');
 
     } catch (error) {
       console.log('Erro no cadastro:', error.code, error.message);
 
-      if (error.code === 'auth/email-already-in-use') {
-        Alert.alert('Este email já está em uso.');
-      } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Email inválido.');
-      } else if (error.code === 'auth/weak-password') {
-        Alert.alert('A senha precisa ter no mínimo 6 caracteres.');
-      } else {
-        Alert.alert('Erro ao cadastrar:', error.message);
+      // Mensagens específicas baseadas no erro
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          Alert.alert('Erro', 'Este email já está em uso.');
+          break;
+        case 'auth/invalid-email':
+          Alert.alert('Erro', 'Email inválido.');
+          break;
+        case 'auth/weak-password':
+          Alert.alert('Erro', 'A senha precisa ter no mínimo 6 caracteres.');
+          break;
+        default:
+          Alert.alert('Erro', `Erro ao cadastrar: ${error.message}`);
       }
     }
   };
@@ -74,6 +80,7 @@ export default function Cadastro({ navigation }) {
             <Text style={styles.title}>CADASTRAR</Text>
           </View>
 
+          {/* Nome */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Nome:</Text>
             <TextInput
@@ -82,9 +89,12 @@ export default function Cadastro({ navigation }) {
               placeholderTextColor="#aaa"
               value={nome}
               onChangeText={setNome}
+              autoCapitalize="words"
+              keyboardType="default"
             />
           </View>
 
+          {/* Email */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email:</Text>
             <TextInput
@@ -95,9 +105,11 @@ export default function Cadastro({ navigation }) {
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
+              textContentType="emailAddress"
             />
           </View>
 
+          {/* Senha */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Senha:</Text>
             <TextInput
@@ -107,6 +119,7 @@ export default function Cadastro({ navigation }) {
               placeholderTextColor="#aaa"
               value={senha}
               onChangeText={setSenha}
+              textContentType="password"
             />
           </View>
 
@@ -128,7 +141,6 @@ export default function Cadastro({ navigation }) {
     </ImageBackground>
   );
 }
-
 
 const styles = StyleSheet.create({
   background: {
@@ -159,6 +171,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 5,
     marginBottom: 20,
+    borderRadius: 10,
   },
   title: {
     fontSize: 18,
@@ -172,17 +185,18 @@ const styles = StyleSheet.create({
   label: {
     color: '#fff',
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 6,
   },
   input: {
     borderBottomWidth: 1,
     borderBottomColor: '#aaa',
     color: '#fff',
-    paddingVertical: 5,
+    paddingVertical: 8,
+    fontSize: 16,
   },
   button: {
     backgroundColor: '#f4ecde',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 15,
     marginTop: 20,
@@ -190,6 +204,8 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#000',
     fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center',
   },
   textCadastro: {
     position: 'absolute',
@@ -208,7 +224,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
-
   linkDestacado: {
     color: '#fff',
     textDecorationLine: 'underline',

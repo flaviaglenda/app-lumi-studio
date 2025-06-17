@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   },
   services: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     flexWrap: 'wrap',
   },
   card: {
