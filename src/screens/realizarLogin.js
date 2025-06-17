@@ -9,6 +9,23 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native';
+import { loginComEmailESenha } from "../../authService";
+
+const realizarLogin = ({ navigation }) => {
+  const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const tentarLogar = () => {
+        loginComEmailESenha(email, password)
+        .then(() => {
+            navigation.navigate('PaginaPrincipal');
+        })
+        .catch(error => {
+            console.error('Login faied: ', error);
+        });
+    };
+}
+    
 // import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 
@@ -58,7 +75,8 @@ export default function App({navigation}) {
 
           <Pressable
             style={styles.button}
-            onPress={() => navigation.navigate('Início')}
+            onPress={() => navigation.navigate('Inicio')}
+          
           >
             <Text style={styles.buttonText}>ENTRAR</Text>
           </Pressable>

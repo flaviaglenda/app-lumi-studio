@@ -1,47 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Image, StyleSheet, Platform, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import realizarLogin from './src/screens/realizarLogin';
 import realizarCadastro from './src/screens/realizarCadastro';
 import telaInicial from './src/screens/telaInicial';
 import telaGaleria from './src/screens/galeria';
 import telaUpload from './src/screens/realizarUpload';
-
 import AgendamentosMenuScreen from './src/screens/AgendamentosMenuScreen';
 import AgendamentoScreen from './src/screens/agendamento';
 import MeusAgendamentosScreen from './src/screens/MeusAgendamentosScreen';
 
 const Drawer = createDrawerNavigator();
-const Stack = createNativeStackNavigator();
-
-function AgendamentoStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="AgendamentosMenu" component={AgendamentosMenuScreen} />
-      <Stack.Screen name="Agendamento" component={AgendamentoScreen} />
-      <Stack.Screen name="MeusAgendamentos" component={MeusAgendamentosScreen} />
-    </Stack.Navigator>
-  );
-}
-
-// Pilha de autenticação (login e cadastro), sem drawer
-function AuthStack() {
-  return (
-    <Stack.Navigator
-      initialRouteName="Login"
-      screenOptions={{
-        headerShown: false, // Sem header aqui também
-      }}
-    >
-      <Stack.Screen name="Login" component={realizarLogin} />
-      <Stack.Screen name="Cadastro" component={realizarCadastro} />
-    </Stack.Navigator>
-  );
-}
 
 function LogoHeader() {
   return (
@@ -83,40 +55,35 @@ function CustomDrawerContent(props) {
 }
 
 export default function App() {
-  // Aqui, você vai controlar se o usuário está logado
-  // Por enquanto vamos usar um estado falso para simular
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   return (
     <NavigationContainer>
-      {isLoggedIn ? (
-        <Drawer.Navigator
-          initialRouteName="Início"
-          drawerContent={(props) => <CustomDrawerContent {...props} />}
-          screenOptions={{
-            headerStyle: { backgroundColor: '#000' },
-            headerTintColor: '#fff',
-            headerTitle: () => <LogoHeader />, // Logo em todas as telas do drawer
-            drawerStyle: {
-              backgroundColor: '#000',
-            },
-            drawerActiveTintColor: '#fff',
-            drawerInactiveTintColor: '#aaa',
-            drawerLabelStyle: {
-              fontSize: 16,
-              marginLeft: -10,
-            },
-          }}
-        >
-          <Drawer.Screen name="Início" component={telaInicial} />
-          <Drawer.Screen name="Galeria" component={telaGaleria} />
-          <Drawer.Screen name="Agendamento" component={AgendamentoStack} />
-          <Drawer.Screen name="Upload de fotos" component={telaUpload} />
-        </Drawer.Navigator>
-      ) : (
-        <AuthStack />
-      )}
-
+      <Drawer.Navigator
+        initialRouteName="Login"
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
+        screenOptions={{
+          headerStyle: { backgroundColor: '#000' },
+          headerTintColor: '#fff',
+          headerTitle: () => <LogoHeader />,
+          drawerStyle: {
+            backgroundColor: '#000',
+          },
+          drawerActiveTintColor: '#fff',
+          drawerInactiveTintColor: '#aaa',
+          drawerLabelStyle: {
+            fontSize: 16,
+            marginLeft: -10,
+          },
+        }}
+      >
+        <Drawer.Screen name="Inicio" component={telaInicial} />
+        <Drawer.Screen name="Galeria" component={telaGaleria} />
+        <Drawer.Screen name="AgendamentosMenu" component={AgendamentosMenuScreen} />
+        <Drawer.Screen name="Agendamento" component={AgendamentoScreen} />
+        <Drawer.Screen name="MeusAgendamentos" component={MeusAgendamentosScreen} />
+        <Drawer.Screen name="Upload de fotos" component={telaUpload} />
+        <Drawer.Screen name="Login" component={realizarLogin} />
+        <Drawer.Screen name="Cadastro" component={realizarCadastro} />
+      </Drawer.Navigator>
       <StatusBar style="light" />
     </NavigationContainer>
   );
