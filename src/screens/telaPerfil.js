@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,22 +6,48 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import Icone from 'react-native-vector-icons/Feather';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import { auth } from '../../firebaseConfig';  // caminho correto do seu config
+import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
 
 export default function TelaPerfil() {
-  const [nome, setNome] = useState('Seu Nome');
-  const [email, setEmail] = useState('seuemail@email.com');
-  const [senha, setSenha] = useState('******');
-
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
   const [editandoCampo, setEditandoCampo] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
 
-  const handleSalvar = () => {
-    setShowAlert(true);
-    setEditandoCampo(null);
+  useEffect(() => {
+    if (auth.currentUser) {
+      setNome(auth.currentUser.displayName || '');
+      setEmail(auth.currentUser.email || '');
+      setSenha(''); // senha não vem do auth por segurança
+    }
+  }, []);
+
+  const handleSalvar = async () => {
+    try {
+      // Atualizar nome
+      if (auth.currentUser.displayName !== nome) {
+        await updateProfile(auth.currentUser, { displayName: nome });
+      }
+      // Atualizar email
+      if (auth.currentUser.email !== email) {
+        await updateEmail(auth.currentUser, email);
+      }
+      // Atualizar senha (se alterou)
+      if (senha.length > 0) {
+        await updatePassword(auth.currentUser, senha);
+      }
+
+      setShowAlert(true);
+      setEditandoCampo(null);
+      setSenha('');
+    } catch (error) {
+      alert('Erro ao atualizar: ' + error.message);
+    }
   };
 
   return (
@@ -31,15 +57,6 @@ export default function TelaPerfil() {
         <Text style={styles.title}>PERFIL</Text>
       </View>
 
-      {/* Foto */}
-      <View style={styles.imageBox}>
-        <Image
-          source={require('../assets/perfil icon.png')} // coloque sua imagem aqui
-          style={styles.image}
-        />
-      </View>
-
-      {/* Box de edição */}
       <View style={styles.editBox}>
         {/* Nome */}
         <View style={styles.inputGroup}>
@@ -97,6 +114,7 @@ export default function TelaPerfil() {
               onBlur={() => setEditandoCampo(null)}
               secureTextEntry
               autoFocus
+              placeholder="Digite nova senha"
             />
           ) : (
             <TouchableOpacity
@@ -104,7 +122,7 @@ export default function TelaPerfil() {
               onPress={() => setEditandoCampo('senha')}
             >
               <Text style={styles.inputText}>
-                {senha.replace(/./g, '•')}
+                {senha.replace(/./g, '•') || '******'}
               </Text>
               <Icone name="edit" size={18} color="#fff" />
             </TouchableOpacity>
@@ -133,6 +151,9 @@ export default function TelaPerfil() {
     </View>
   );
 }
+
+// seus estilos permanecem iguais
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -165,7 +186,7 @@ const styles = StyleSheet.create({
     width: '85%',
     padding: 20,
     borderRadius: 15,
-    marginTop: 20,
+    marginTop: 50,
   },
   inputGroup: {
     marginBottom: 20,

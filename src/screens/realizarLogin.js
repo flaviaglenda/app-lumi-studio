@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,49 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  Alert,
 } from 'react-native';
-// import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
+export default function Login({ navigation, setIsLoggedIn }) {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
 
-export default function App({ navigation }) {
+  const handleLogin = async () => {
+    if (!email.trim() || !senha.trim()) {
+      Alert.alert('Atenção', 'Preencha todos os campos!');
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+      const user = userCredential.user;
+      console.log('Usuário logado:', user.email);
+      Alert.alert('Sucesso', 'Login realizado com sucesso!');
+      setIsLoggedIn(true); // <-- Ativa o drawer e a navegação principal
+      // navigation.navigate('Inicio'); // pode tirar, pq a navegação muda automaticamente
+    } catch (error) {
+      console.log('Erro no login:', error);
+      switch (error.code) {
+        case 'auth/user-not-found':
+          Alert.alert('Erro', 'Usuário não encontrado!');
+          break;
+        case 'auth/wrong-password':
+          Alert.alert('Erro', 'Senha incorreta!');
+          break;
+        case 'auth/invalid-email':
+          Alert.alert('Erro', 'Email inválido!');
+          break;
+        case 'auth/network-request-failed':
+          Alert.alert('Erro', 'Sem conexão com a internet!');
+          break;
+        default:
+          Alert.alert('Erro', error.message);
+      }
+    }
+  };
+
   return (
     <ImageBackground
       source={require('./../assets/login-fundo.jpg')}
@@ -28,22 +66,16 @@ export default function App({ navigation }) {
             <Text style={styles.title}>LOGIN</Text>
           </View>
 
-          {/* <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nome:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Insira seu nome completo"
-              placeholderTextColor="#aaa"
-            />
-          </View> */}
-
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email:</Text>
             <TextInput
               style={styles.input}
               placeholder="Insira seu email"
               keyboardType="email-address"
+              autoCapitalize="none"
               placeholderTextColor="#aaa"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -54,17 +86,20 @@ export default function App({ navigation }) {
               placeholder="Insira sua senha"
               secureTextEntry
               placeholderTextColor="#aaa"
+              value={senha}
+              onChangeText={setSenha}
             />
           </View>
 
           <Pressable
             style={styles.button}
-            onPress={() => navigation.navigate('Início')}
+            onPress={handleLogin}
           >
             <Text style={styles.buttonText}>ENTRAR</Text>
           </Pressable>
         </View>
       </View>
+
       <View style={styles.textCadastro}>
         <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
           <Text style={styles.linkCadastro}>
