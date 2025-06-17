@@ -17,12 +17,14 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import banner from '../assets/titolo.png';
 import { useNavigation } from '@react-navigation/native';
+import { getAuth } from 'firebase/auth';
 
 export default function AgendamentoScreen() {
+  const [sucesso, setSucesso] = useState(false);
+  const [erro, setErro] = useState('');
   const navigation = useNavigation();
   const [form, setForm] = useState({
     nome: '',
-    email: '',
     telefone: '',
     data: '',
     hora: '',
@@ -47,38 +49,50 @@ export default function AgendamentoScreen() {
   }, []);
 
   const handleChange = (field, value) => {
+    setErro('');
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
-    if (!form.nome || !form.email || !form.telefone || !form.data || !form.hora) {
-      Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      setErro('Você precisa estar logado para agendar.');
+      return;
+    }
+
+    if (!form.telefone || !form.data || !form.hora) {
+      setErro('Preencha todos os campos obrigatórios.');
       return;
     }
 
     const dataCompleta = `${form.data}T${form.hora.length === 5 ? form.hora : form.hora + ':00'}`;
 
     if (isNaN(Date.parse(dataCompleta))) {
-      Alert.alert('Erro', 'Data ou hora inválida.');
+      setErro('Data ou hora inválida.');
       return;
     }
 
     try {
       await addDoc(collection(db, 'agendamentos'), {
-        nomeCompleto: form.nome,
-        emailAgendamento: form.email,
+        uidUsuario: user.uid,
+        nomeCompleto: form.nome || user.displayName || '',
+        emailAgendamento: user.email,
         telefone: form.telefone,
         dataAgendamento: new Date(dataCompleta),
-        detalhes: form.detalhes
+        detalhes: form.detalhes || '',
+        criadoEm: new Date()
       });
 
-      Alert.alert('Sucesso', 'Agendamento enviado!');
-      setForm({ nome: '', email: '', telefone: '', data: '', hora: '', detalhes: '' });
-      navigation.navigate('MeusAgendamentos');
+      setErro('');          
+      setSucesso(true);    
+      setForm({ nome: '', telefone: '', data: '', hora: '', detalhes: '' });
 
+      
     } catch (error) {
       console.error('Erro ao enviar agendamento:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao enviar seu agendamento.');
+      setErro('Ocorreu um erro ao enviar seu agendamento.');
     }
   };
 
@@ -113,14 +127,7 @@ export default function AgendamentoScreen() {
           onChangeText={text => handleChange('nome', text)}
           value={form.nome}
         />
-        <TextInput
-          placeholder="Seu e-mail"
-          style={styles.input}
-          onFocus={() => setCampoAtivo('email')}
-          onChangeText={text => handleChange('email', text)}
-          value={form.email}
-          keyboardType="email-address"
-        />
+
         <TextInput
           placeholder="Telefone (com DDD)"
           keyboardType="phone-pad"
@@ -157,7 +164,27 @@ export default function AgendamentoScreen() {
           onChangeText={text => handleChange('detalhes', text)}
           value={form.detalhes}
         />
-
+        {sucesso && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              <Text style={styles.modalText}>Agendamento enviado com sucesso!</Text>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  setSucesso(false);
+                  navigation.navigate('MeusAgendamentos');
+                }}
+              >
+                <Text style={styles.modalButtonText}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        {erro !== '' && (
+          <View style={styles.containerErro}>
+            <Text style={styles.textoErro}>{erro}</Text>
+          </View>
+        )}
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>ENVIAR</Text>
         </TouchableOpacity>
@@ -184,6 +211,40 @@ const styles = StyleSheet.create({
     height: 150,
     marginBottom: 20,
   },
+
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)', // fundo escuro translúcido
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalBox: {
+    backgroundColor: 'white',
+    padding: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    maxWidth: '80%',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: '#ffc107',
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderRadius: 5,
+  },
+  modalButtonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -192,8 +253,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   calendarWrapper: {
-    transform: [{ scale: 1 }], // Diminui o calendário
-    alignSelf: 'center',         // Centraliza
+    transform: [{ scale: 1 }],
+    alignSelf: 'center',
     borderRadius: 10,
     marginBottom: 20,
   },
@@ -202,21 +263,21 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   voltar: {
-  alignSelf: 'flex-start',
-  marginLeft: 10,
-  marginTop: 5,
-  marginBottom: 10,
-  paddingVertical: 6,
-  paddingHorizontal: 12,
-  backgroundColor: '#000',
-  borderRadius: 8,
-},
+    alignSelf: 'flex-start',
+    marginLeft: 10,
+    marginTop: 5,
+    marginBottom: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#000',
+    borderRadius: 8,
+  },
 
-voltarTexto: {
-  color: '#fff',
-  fontSize: 16,
-  fontWeight: 'bold',
-},
+  voltarTexto: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   button: {
     backgroundColor: '#000',
     padding: 15,
@@ -225,7 +286,7 @@ voltarTexto: {
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',         // ← cor branca
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -235,6 +296,16 @@ voltarTexto: {
   previewText: {
     fontSize: 14,
     color: '#333',
+  },
+  containerErro: {
+    backgroundColor: '#f8d7da',
+    padding: 10,
+    marginVertical: 8,
+    borderRadius: 5,
+  },
+  textoErro: {
+    color: '#721c24',
+    fontWeight: 'bold',
   },
   previewFloating: {
     position: 'absolute',

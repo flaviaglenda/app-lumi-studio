@@ -5,23 +5,23 @@ import { db } from '../../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { getAuth } from 'firebase/auth';
 
+
 export default function MeusAgendamentosScreen() {
   const navigation = useNavigation();
   const [agendamentos, setAgendamentos] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const carregarAgendamentos = async () => {
       try {
         const auth = getAuth();
         const user = auth.currentUser;
-
+        
         if (!user) {
           console.log("Nenhum usuário logado");
           setLoading(false);
           return;
         }
-
+        console.log("Email do usuário logado:", user.email);
         const q = query(
           collection(db, 'agendamentos'),
           where('emailAgendamento', '==', user.email),

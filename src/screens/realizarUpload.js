@@ -16,11 +16,31 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
 import s3 from '../../awsConfig'; // Seu awsConfig
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useEffect } from 'react';
+
+
 
 export default function RealizarUpload({ navigation }) {
   const [images, setImages] = useState([]);
   const [title, setTitle] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+  const auth = getAuth();
+
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      Alert.alert('Acesso negado', 'Você precisa estar logado para acessar essa página.');
+      navigation.replace('Login');
+    } else {
+      setUserEmail(user.email); // ← pega o e-mail do usuário logado
+    }
+  });
+
+  return unsubscribe;
+}, []);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
