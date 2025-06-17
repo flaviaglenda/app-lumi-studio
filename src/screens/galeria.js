@@ -7,7 +7,6 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import Icone from "react-native-vector-icons/FontAwesome";
 import s3 from "../../awsConfig";
 
 export default function TelaGaleria() {
@@ -46,16 +45,26 @@ export default function TelaGaleria() {
 
   return (
     <View style={estilos.container}>
+      {/* TOPO */}
       <View style={estilos.barraTopo}>
-        <View style={estilos.botaoGaleria}>
-          <Text style={estilos.textoBotaoGaleria}>GALERIA</Text>
+        <View style={estilos.areaTopoImagem}>
+          <View style={estilos.overlayTexto}>
+            <Text style={estilos.textoSobreImagem}>
+              EXPLORE NOSSA GALERIA
+            </Text>
+          </View>
         </View>
       </View>
 
+      {/* CONTEÚDO */}
       <ScrollView contentContainerStyle={estilos.scrollContainer}>
         <View style={estilos.conteudo}>
           {carregando ? (
             <ActivityIndicator size="large" color="#000" />
+          ) : fotos.length === 0 ? (
+            <Text style={{ textAlign: "center", marginTop: 20 }}>
+              Nenhuma imagem encontrada.
+            </Text>
           ) : (
             fotos.map((item, index) => (
               <View key={index} style={estilos.cartao}>
@@ -63,55 +72,28 @@ export default function TelaGaleria() {
                   <View style={estilos.pontoVermelho} />
                   <Text style={estilos.textoTitulo}>{item.titulo}</Text>
                 </View>
-                <Image
-                  source={{ uri: item.url }}
-                  style={estilos.imagemGaleria}
-                />
+
+                <View style={estilos.sombraImagem}>
+                  <Image
+                    source={{ uri: item.url }}
+                    style={estilos.imagemGaleria}
+                  />
+                </View>
               </View>
             ))
           )}
         </View>
 
-        <View style={estilos.rodape}>
-          <View style={{ flexDirection: "column" }}>
-            <Image
-              source={require("../assets/logo_fundopreto.png")}
-              style={estilos.logoImagem}
-            />
-            <Text style={estilos.textoRodape}>
-              Capture o mundo com a gente! Conecte-se com nossa comunidade,
-              acesse recursos essenciais e conte com nosso suporte sempre que
-              precisar.
-            </Text>
-            <View style={estilos.iconesSociais}>
-              <Icone
-                name="instagram"
-                size={18}
-                color="#fff"
-                style={estilos.iconeSocial}
-              />
-              <Icone
-                name="facebook"
-                size={18}
-                color="#fff"
-                style={estilos.iconeSocial}
-              />
-              <Icone
-                name="youtube"
-                size={18}
-                color="#fff"
-                style={estilos.iconeSocial}
-              />
-            </View>
-          </View>
-        </View>
+       
       </ScrollView>
     </View>
   );
 }
 
 const estilos = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: "#f4ecde" },
+
+  // TOPO
   barraTopo: {
     flexDirection: "row",
     alignItems: "center",
@@ -119,27 +101,43 @@ const estilos = StyleSheet.create({
     paddingTop: 10,
     justifyContent: "space-between",
   },
-  botaoGaleria: {
-    marginLeft: 130,
-    backgroundColor: "#2b2b2b",
-    paddingHorizontal: 18,
-    paddingVertical: 6,
-    borderRadius: 14,
+  areaTopoImagem: {
+    position: "relative",
+    width: "100%",
+    height: 40,
+    marginBottom: 16,
   },
-  textoBotaoGaleria: {
-    color: "#fff",
+  overlayTexto: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  textoSobreImagem: {
+    color: "#000", // Corrigido, antes estava "000"
+    fontSize: 22,
     fontWeight: "bold",
+    textAlign: "center",
+    textShadowColor: "rgba(0, 0, 0, 0.28)",
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 4,
   },
+
+  // CONTEÚDO
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "space-between",
     paddingBottom: 20,
-    backgroundColor: "#fffaf2",
+    backgroundColor: "#f4ecde",
   },
   conteudo: { paddingHorizontal: 16 },
   cartao: {
     marginBottom: 26,
-    backgroundColor: "#fff",
+    backgroundColor: "#f4ecde",
   },
   linhaTitulo: {
     flexDirection: "row",
@@ -162,32 +160,14 @@ const estilos = StyleSheet.create({
     height: 160,
     borderRadius: 10,
   },
-  rodape: {
-    marginTop: 30,
-    backgroundColor: "#000",
-    height: 200,
-    width: "100%",
-    alignSelf: "stretch",
-    marginBottom: -90,
-    padding: 16,
-  },
-  logoImagem: {
-    width: 140,
-    height: 45,
-    resizeMode: "contain",
-    marginBottom: 14,
-  },
-  textoRodape: {
-    color: "#ccc",
-    fontSize: 12,
-    lineHeight: 17,
-    marginBottom: 14,
-  },
-  iconesSociais: {
-    flexDirection: "row",
-    marginTop: 8,
-  },
-  iconeSocial: {
-    marginRight: 16,
+  sombraImagem: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 9,
+    borderRadius: 10,
+    backgroundColor: "transparent",
+    marginBottom: 10,
   },
 });

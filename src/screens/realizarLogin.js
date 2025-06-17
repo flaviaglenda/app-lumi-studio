@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,32 +7,54 @@ import {
   ImageBackground,
   Image,
   StyleSheet,
+  TouchableOpacity,
   Pressable,
+  Alert,
 } from 'react-native';
-import { loginComEmailESenha } from "../../authService";
+import { auth } from '../../firebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
-const realizarLogin = ({ navigation }) => {
-  const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+export default function Login({ navigation, setIsLoggedIn }) {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
 
-    const tentarLogar = () => {
-        loginComEmailESenha(email, password)
-        .then(() => {
-            navigation.navigate('PaginaPrincipal');
-        })
-        .catch(error => {
-            console.error('Login faied: ', error);
-        });
-    };
-}
-    
-// import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+  const handleLogin = async () => {
+    if (!email.trim() || !senha.trim()) {
+      Alert.alert('Atenção', 'Preencha todos os campos!');
+      return;
+    }
 
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+      const user = userCredential.user;
+      console.log('Usuário logado:', user.email);
+      Alert.alert('Sucesso', 'Login realizado com sucesso!');
+      setIsLoggedIn(true); // <-- Ativa o drawer e a navegação principal
+      // navigation.navigate('Inicio'); // pode tirar, pq a navegação muda automaticamente
+    } catch (error) {
+      console.log('Erro no login:', error);
+      switch (error.code) {
+        case 'auth/user-not-found':
+          Alert.alert('Erro', 'Usuário não encontrado!');
+          break;
+        case 'auth/wrong-password':
+          Alert.alert('Erro', 'Senha incorreta!');
+          break;
+        case 'auth/invalid-email':
+          Alert.alert('Erro', 'Email inválido!');
+          break;
+        case 'auth/network-request-failed':
+          Alert.alert('Erro', 'Sem conexão com a internet!');
+          break;
+        default:
+          Alert.alert('Erro', error.message);
+      }
+    }
+  };
 
-export default function App({navigation}) {
   return (
     <ImageBackground
-      source={require('./../assets/login-fundo.jpg')} 
+      source={require('./../assets/login-fundo.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
@@ -44,22 +66,16 @@ export default function App({navigation}) {
             <Text style={styles.title}>LOGIN</Text>
           </View>
 
-          {/* <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nome:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Insira seu nome completo"
-              placeholderTextColor="#aaa"
-            />
-          </View> */}
-
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email:</Text>
             <TextInput
               style={styles.input}
               placeholder="Insira seu email"
               keyboardType="email-address"
+              autoCapitalize="none"
               placeholderTextColor="#aaa"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -70,18 +86,28 @@ export default function App({navigation}) {
               placeholder="Insira sua senha"
               secureTextEntry
               placeholderTextColor="#aaa"
+              value={senha}
+              onChangeText={setSenha}
             />
           </View>
 
           <Pressable
             style={styles.button}
-            onPress={() => navigation.navigate('Inicio')}
-          
+            onPress={handleLogin}
           >
             <Text style={styles.buttonText}>ENTRAR</Text>
           </Pressable>
         </View>
       </View>
+
+      <View style={styles.textCadastro}>
+        <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
+          <Text style={styles.linkCadastro}>
+            Não tem uma conta? <Text style={styles.linkDestacado}>Cadastre-se</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <StatusBar style="auto" />
     </ImageBackground>
   );
@@ -147,5 +173,24 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#000',
     fontWeight: '900',
+  },
+  textCadastro: {
+    marginTop: -90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
+    width: 'auto',
+    height: 80,
+    borderRadius: 900,
+  },
+
+  linkCadastro: {
+    fontSize: 16,
+    color: '#fff',
+  },
+
+  linkDestacado: {
+    color: '#fff',
+    textDecorationLine: 'underline',
   },
 });

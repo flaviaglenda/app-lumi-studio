@@ -1,18 +1,51 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import { Buffer } from 'buffer';
+import s3 from '../../awsConfig'; // Seu awsConfig
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useEffect } from 'react';
 
-export default function App({ navigation }) {
+
+
+export default function RealizarUpload({ navigation }) {
   const [images, setImages] = useState([]);
   const [title, setTitle] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+  const auth = getAuth();
+
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      Alert.alert('Acesso negado', 'Você precisa estar logado para acessar essa página.');
+      navigation.replace('Login');
+    } else {
+      setUserEmail(user.email); // ← pega o e-mail do usuário logado
+    }
+  });
+
+  return unsubscribe;
+}, []);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
-      allowsMultipleSelection: false,
     });
 
     if (!result.canceled) {
@@ -25,17 +58,71 @@ export default function App({ navigation }) {
     newImages.splice(index, 1);
     setImages(newImages);
   };
+const uploadToS3 = async (fileUri) => {
+  try {
+    const fileName = fileUri.split('/').pop();
+    const fileType = fileName.split('.').pop();
 
-  const handlePublish = () => {
-    // Aqui você poderia enviar as imagens e o título para um backend ou navegar
-    navigation.navigate('Galeria');
+    const base64 = await FileSystem.readAsStringAsync(fileUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    const buffer = Buffer.from(base64, 'base64');
+
+    // Usa exatamente o título digitado pela pessoa
+    const sanitizedTitle = title.trim(); // Remove apenas espaços nas pontas
+
+    const params = {
+      Bucket: 'lumi-studio',
+      Key: `fotos/${sanitizedTitle}.${fileType}`, 
+      Body: buffer,
+      ContentType: `image/${fileType}`,
+      ACL: 'public-read',
+    };
+
+    return s3.upload(params).promise();
+  } catch (error) {
+    console.error('Erro no uploadToS3:', error);
+    throw error;
+  }
+};
+
+
+  const handlePublish = async () => {
+    if (images.length === 0 || title.trim() === '') {
+      Alert.alert('Atenção', 'Adicione pelo menos uma imagem e um título.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const uploadPromises = images.map((img) => uploadToS3(img));
+      await Promise.all(uploadPromises);
+
+    Alert.alert('Sucesso', 'Suas fotos foram publicadas na galeria!', [
+  {
+    text: 'OK',
+    onPress: () => navigation.navigate('Galeria', { atualizar: true }),
+  },
+]);
+
+
+      setImages([]);
+      setTitle('');
+    } catch (error) {
+      console.error('Erro ao enviar:', error);
+      Alert.alert('Erro', 'Houve um problema ao enviar suas fotos.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.title}>
-          Aqui você pode fazer o upload das suas fotos e publicá-las. Apenas arraste a foto ou aperte no botão "SELECIONAR ARQUIVOS".
+          Faça o upload das suas fotos e publique na galeria. Aperte em "SELECIONAR ARQUIVOS".
         </Text>
 
         <View style={styles.uploadContainer}>
@@ -43,7 +130,10 @@ export default function App({ navigation }) {
             {images.map((img, index) => (
               <View key={index} style={styles.imageWrapper}>
                 <Image source={{ uri: img }} style={styles.image} />
-                <TouchableOpacity style={styles.closeButton} onPress={() => removeImage(index)}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => removeImage(index)}
+                >
                   <Ionicons name="close" size={16} color="#fff" />
                 </TouchableOpacity>
               </View>
@@ -62,28 +152,24 @@ export default function App({ navigation }) {
             onChangeText={setTitle}
           />
 
-          <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
-            <Text style={styles.publishText}>PUBLICAR</Text>
+          <TouchableOpacity
+            style={styles.publishButton}
+            onPress={handlePublish}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.publishText}>PUBLICAR</Text>
+            )}
           </TouchableOpacity>
         </View>
 
         <Text style={styles.infoText}>
-          Ao enviar uma imagem, você concorda com nossos [Termos de Uso] e [Política de Privacidade].{'\n\n'}
-          Garantimos que seus arquivos são armazenados com segurança e utilizados exclusivamente para fins na plataforma. Não compartilhamos seus arquivos com terceiros sem o seu consentimento.
+          Ao enviar, você concorda com nossos Termos e Política de Privacidade.
         </Text>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Lumi Studios{'\n'}
-            Capture o mundo com a gente!{'\n'}
-            Conecte-se pelos nossos canais e acesse recursos essenciais.
-          </Text>
-          <View style={styles.social}>
-            <Ionicons name="logo-instagram" size={20} color="#fff" />
-            <Ionicons name="logo-facebook" size={20} color="#fff" />
-            <Ionicons name="logo-x" size={20} color="#fff" />
-          </View>
-        </View>
+    
       </ScrollView>
       <StatusBar style="auto" />
     </View>
@@ -169,19 +255,6 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: 20,
   },
-  footer: {
-    backgroundColor: '#000',
-    padding: 15,
-    borderRadius: 8,
-  },
-  footerText: {
-    color: '#fff',
-    fontSize: 12,
-    marginBottom: 10,
-  },
-  social: {
-    flexDirection: 'row',
-    gap: 10,
-  },
+
 });
 

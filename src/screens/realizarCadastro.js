@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,62 @@ import {
   ImageBackground,
   Image,
   StyleSheet,
+  TouchableOpacity,
   Pressable,
+  Alert,
 } from 'react-native';
-// import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../../firebaseConfig';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
 
+export default function Cadastro({ navigation }) {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
 
-export default function App({navigation}) {
+  const handleCadastro = async () => {
+    if (!nome || !email || !senha) {
+      Alert.alert('Preencha todos os campos!');
+      return;
+    }
+
+    if (senha.length < 6) {
+      Alert.alert('A senha precisa ter no mínimo 6 caracteres.');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      const user = userCredential.user;
+
+      // Salvando nome e email no Firestore
+      await setDoc(doc(db, 'usuarios', user.uid), {
+        nome: nome,
+        email: email,
+        uid: user.uid,
+      });
+
+      Alert.alert('Conta criada com sucesso!');
+      navigation.navigate('Login');
+
+    } catch (error) {
+      console.log('Erro no cadastro:', error.code, error.message);
+
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert('Este email já está em uso.');
+      } else if (error.code === 'auth/invalid-email') {
+        Alert.alert('Email inválido.');
+      } else if (error.code === 'auth/weak-password') {
+        Alert.alert('A senha precisa ter no mínimo 6 caracteres.');
+      } else {
+        Alert.alert('Erro ao cadastrar:', error.message);
+      }
+    }
+  };
+
   return (
     <ImageBackground
-      source={require('./../assets/cadastrar-fundo.jpg')} 
+      source={require('./../assets/cadastrar-fundo.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
@@ -33,6 +80,8 @@ export default function App({navigation}) {
               style={styles.input}
               placeholder="Insira seu nome completo"
               placeholderTextColor="#aaa"
+              value={nome}
+              onChangeText={setNome}
             />
           </View>
 
@@ -43,6 +92,9 @@ export default function App({navigation}) {
               placeholder="Insira seu email"
               keyboardType="email-address"
               placeholderTextColor="#aaa"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -53,21 +105,30 @@ export default function App({navigation}) {
               placeholder="Insira sua senha"
               secureTextEntry
               placeholderTextColor="#aaa"
+              value={senha}
+              onChangeText={setSenha}
             />
           </View>
 
-          <Pressable
-            style={styles.button}
-            onPress={() => navigation.navigate('Início')}
-          >
-            <Text style={styles.buttonText}>ENTRAR</Text>
+          <Pressable style={styles.button} onPress={handleCadastro}>
+            <Text style={styles.buttonText}>CADASTRAR</Text>
           </Pressable>
         </View>
       </View>
+
+      <View style={styles.textCadastro}>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.linkCadastro}>
+            Já possui uma conta? <Text style={styles.linkDestacado}>Entrar</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <StatusBar style="auto" />
     </ImageBackground>
   );
 }
+
 
 const styles = StyleSheet.create({
   background: {
@@ -129,5 +190,27 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#000',
     fontWeight: 'bold',
+  },
+  textCadastro: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    height: 90,
+    backgroundColor: 'black',
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 999,
+  },
+  linkCadastro: {
+    top: 15,
+    fontSize: 16,
+    color: '#fff',
+  },
+
+  linkDestacado: {
+    color: '#fff',
+    textDecorationLine: 'underline',
   },
 });
